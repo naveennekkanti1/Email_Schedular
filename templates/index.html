@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Email Sender</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .form-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-section h2::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .input-group input,
+        .input-group textarea,
+        .input-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group input:focus,
+        .input-group textarea:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .email-method {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .method-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .method-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+        
+        .method-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .schedule-options {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .schedule-btn {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .schedule-btn.active {
+            border-color: #28a745;
+            background: #28a745;
+            color: white;
+        }
+        
+        .schedule-btn:hover {
+            border-color: #28a745;
+            transform: translateY(-2px);
+        }
+        
+        .file-upload {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .file-upload input[type="file"] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-upload-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            background: #f9f9f9;
+            transition: all 0.3s ease;
+        }
+        
+        .file-upload-label:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+        
+        .btn-success:hover {
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+        }
+        
+        .email-list {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .email-item {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            margin: 3px;
+            border-radius: 15px;
+            font-size: 14px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .row {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .col {
+            flex: 1;
+        }
+        
+        .scheduled-jobs {
+            margin-top: 20px;
+        }
+        
+        .job-item {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .job-info {
+            flex: 1;
+        }
+        
+        .job-title {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .job-details {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .job-status {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            margin-right: 10px;
+        }
+        
+        .status-scheduled {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-sending {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-cancelled {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+        
+        .cancel-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .cancel-btn:hover {
+            background: #c82333;
+        }
+        
+        @media (max-width: 768px) {
+            .row {
+                flex-direction: column;
+            }
+            
+            .email-method,
+            .schedule-options {
+                flex-direction: column;
+            }
+            
+            .job-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📧 Bulk Email Sender</h1>
+            <p>Send emails to multiple recipients instantly or schedule for later</p>
+        </div>
+
+        <!-- Alert Messages -->
+        <div id="alertContainer"></div>
+
+        <!-- Email Input Section -->
+        <div class="form-section">
+            <h2>📮 Email Recipients</h2>
+            <div class="email-method">
+                <button type="button" class="method-btn active" id="manualBtn">Manual Entry</button>
+                <button type="button" class="method-btn" id="fileBtn">Upload File</button>
+            </div>
+
+            <!-- Manual Email Input -->
+            <div id="manualInput">
+                <div class="input-group">
+                    <label for="emailList">Enter email addresses (comma separated):</label>
+                    <textarea id="emailList" placeholder="user1@example.com, user2@example.com, user3@example.com" rows="4"></textarea>
+                </div>
+            </div>
+
+            <!-- File Upload -->
+            <div id="fileInput" class="hidden">
+                <div class="file-upload">
+                    <input type="file" id="csvFile" accept=".csv,.xlsx,.xls">
+                    <label for="csvFile" class="file-upload-label">
+                        <span>📁 Choose CSV or Excel file</span>
+                    </label>
+                </div>
+                <small>Supported formats: CSV, XLSX, XLS</small>
+            </div>
+
+            <!-- Email List Display -->
+            <div id="emailListContainer" class="hidden">
+                <h3>📋 Recipients List (<span id="emailCount">0</span> emails)</h3>
+                <div id="emailList" class="email-list"></div>
+            </div>
+        </div>
+
+        <!-- Email Content Section -->
+        <div class="form-section">
+            <h2>✉️ Email Content</h2>
+            <div class="input-group">
+                <label for="subject">Subject:</label>
+                <input type="text" id="subject" placeholder="Enter email subject">
+            </div>
+            <div class="input-group">
+                <label for="message">Message:</label>
+                <textarea id="message" placeholder="Enter your email message..." rows="8"></textarea>
+            </div>
+        </div>
+
+        <!-- Schedule Section -->
+        <div class="form-section">
+            <h2>⏰ Schedule</h2>
+            <div class="schedule-options">
+                <button type="button" class="schedule-btn active" id="sendNowBtn">Send Now</button>
+                <button type="button" class="schedule-btn" id="scheduleLaterBtn">Schedule Later</button>
+            </div>
+
+            <div id="scheduleInput" class="hidden">
+                <div class="input-group">
+                    <label for="scheduleTime">Schedule Date & Time:</label>
+                    <input type="datetime-local" id="scheduleTime">
+                </div>
+            </div>
+        </div>
+
+        <!-- Send Button -->
+        <button type="button" class="btn" id="sendBtn">
+            <span id="sendBtnText">📤 Send Emails</span>
+        </button>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Processing your request...</p>
+        </div>
+
+        <!-- Scheduled Jobs Section -->
+        <div class="form-section">
+            <h2>📅 Scheduled Jobs</h2>
+            <button type="button" class="btn btn-success" id="refreshJobsBtn">🔄 Refresh Jobs</button>
+            <div id="scheduledJobs" class="scheduled-jobs">
+                <!-- Jobs will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentEmails = [];
+        let emailMethod = 'manual';
+        let scheduleMode = 'now';
+
+        // DOM elements
+        const manualBtn = document.getElementById('manualBtn');
+        const fileBtn = document.getElementById('fileBtn');
+        const manualInput = document.getElementById('manualInput');
+        const fileInput = document.getElementById('fileInput');
+        const csvFile = document.getElementById('csvFile');
+        const emailListContainer = document.getElementById('emailListContainer');
+        const emailList = document.getElementById('emailList');
+        const emailCount = document.getElementById('emailCount');
+        const sendNowBtn = document.getElementById('sendNowBtn');
+        const scheduleLaterBtn = document.getElementById('scheduleLaterBtn');
+        const scheduleInput = document.getElementById('scheduleInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const sendBtnText = document.getElementById('sendBtnText');
+        const loading = document.getElementById('loading');
+        const alertContainer = document.getElementById('alertContainer');
+        const refreshJobsBtn = document.getElementById('refreshJobsBtn');
+        const scheduledJobs = document.getElementById('scheduledJobs');
+
+        // Event listeners
+        manualBtn.addEventListener('click', () => switchEmailMethod('manual'));
+        fileBtn.addEventListener('click', () => switchEmailMethod('file'));
+        sendNowBtn.addEventListener('click', () => switchScheduleMode('now'));
+        scheduleLaterBtn.addEventListener('click', () => switchScheduleMode('later'));
+        csvFile.addEventListener('change', handleFileUpload);
+        sendBtn.addEventListener('click', handleSendEmails);
+        refreshJobsBtn.addEventListener('click', loadScheduledJobs);
+        document.getElementById('emailList').addEventListener('input', updateEmailsFromManual);
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadScheduledJobs();
+            setMinDateTime();
+        });
+
+        // Utility functions
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertContainer.appendChild(alertDiv);
+
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        function showLoading(show = true) {
+            loading.style.display = show ? 'block' : 'none';
+            sendBtn.disabled = show;
+        }
+
+        function setMinDateTime() {
+            const now = new Date();
+            const minDateTime = new Date(now.getTime() + 5 * 60000); // 5 minutes from now
+            document.getElementById('scheduleTime').min = minDateTime.toISOString().slice(0, 16);
+        }
+
+        // Email method switching
+        function switchEmailMethod(method) {
+            emailMethod = method;
+            
+            if (method === 'manual') {
+                manualBtn.classList.add('active');
+                fileBtn.classList.remove('active');
+                manualInput.classList.remove('hidden');
+                fileInput.classList.add('hidden');
+            } else {
+                fileBtn.classList.add('active');
+                manualBtn.classList.remove('active');
+                fileInput.classList.remove('hidden');
+                manualInput.classList.add('hidden');
+            }
+        }
+
+        // Schedule mode switching
+        function switchScheduleMode(mode) {
+            scheduleMode = mode;
+            
+            if (mode === 'now') {
+                sendNowBtn.classList.add('active');
+                scheduleLaterBtn.classList.remove('active');
+                scheduleInput.classList.add('hidden');
+                sendBtnText.textContent = '📤 Send Emails';
+            } else {
+                scheduleLaterBtn.classList.add('active');
+                sendNowBtn.classList.remove('active');
+                scheduleInput.classList.remove('hidden');
+                sendBtnText.textContent = '⏰ Schedule Emails';
+            }
+        }
+
+        // Update emails from manual input
+        function updateEmailsFromManual() {
+            const emailText = document.getElementById('emailList').value;
+            if (emailText.trim()) {
+                currentEmails = emailText.split(',').map(email => email.trim()).filter(email => email);
+                displayEmails();
+            } else {
+                currentEmails = [];
+                emailListContainer.classList.add('hidden');
+            }
+        }
+
+        // Handle file upload
+        async function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            showLoading(true);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    currentEmails = result.emails;
+                    displayEmails();
+                    showAlert(`Successfully loaded ${currentEmails.length} emails from file`, 'success');
+                } else {
+                    showAlert(result.error || 'Failed to process file', 'error');
+                }
+            } catch (error) {
+                showAlert('Error uploading file: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Display emails
+        function displayEmails() {
+            if (currentEmails.length === 0) {
+                emailListContainer.classList.add('hidden');
+                return;
+            }
+
+            emailCount.textContent = currentEmails.length;
+            emailList.innerHTML = currentEmails.map(email => 
+                `<span class="email-item">${email}</span>`
+            ).join('');
+            emailListContainer.classList.remove('hidden');
+        }
+
+        // Handle send emails
+        async function handleSendEmails() {
+            // Validate inputs
+            const subject = document.getElementById('subject').value.trim();
+            const message = document.getElementById('message').value.trim();
+            
+            if (!subject) {
+                showAlert('Please enter a subject', 'error');
+                return;
+            }
+
+            if (!message) {
+                showAlert('Please enter a message', 'error');
+                return;
+            }
+
+            // Get emails
+            let emails = [];
+            if (emailMethod === 'manual') {
+                const emailText = document.getElementById('emailList').value.trim();
+                if (emailText) {
+                    emails = emailText.split(',').map(email => email.trim()).filter(email => email);
+                }
+            } else {
+                emails = currentEmails;
+            }
+
+            if (emails.length === 0) {
+                showAlert('Please enter at least one email address', 'error');
+                return;
+            }
+
+            // Prepare request data
+            const requestData = {
+                emails: emails,
+                subject: subject,
+                message: message
+            };
+
+            // Add schedule time if scheduling
+            if (scheduleMode === 'later') {
+                const scheduleTime = document.getElementById('scheduleTime').value;
+                if (!scheduleTime) {
+                    showAlert('Please select a schedule time', 'error');
+                    return;
+                }
+                requestData.schedule_time = scheduleTime;
+            }
+
+            showLoading(true);
+
+            try {
+                const response = await fetch('/send_emails', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.scheduled) {
+                        showAlert(`Emails scheduled successfully for ${new Date(result.schedule_time).toLocaleString()}`, 'success');
+                    } else {
+                        showAlert('Emails are being sent in the background', 'success');
+                    }
+                    
+                    // Clear form
+                    document.getElementById('subject').value = '';
+                    document.getElementById('message').value = '';
+                    document.getElementById('emailList').value = '';
+                    currentEmails = [];
+                    emailListContainer.classList.add('hidden');
+                    
+                    // Refresh jobs
+                    setTimeout(loadScheduledJobs, 1000);
+                } else {
+                    showAlert(result.error || 'Failed to send emails', 'error');
+                }
+            } catch (error) {
+                showAlert('Error sending emails: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Load jobs on page load and by interval
+async function loadScheduledJobs() {
+    try {
+        const response = await fetch('/scheduled_jobs');
+        const jobs = await response.json();
+        displayScheduledJobs(jobs);
+    } catch (error) {
+        showAlert('Error loading jobs: ' + error.message, 'error');
+    }
+}
+
+loadScheduledJobs();
+
+
+        // Display scheduled jobs
+        function displayScheduledJobs(jobs) {
+            if (jobs.length === 0) {
+                scheduledJobs.innerHTML = '<p>No scheduled jobs found.</p>';
+                return;
+            }
+
+            scheduledJobs.innerHTML = jobs.map(job => `
+                <div class="job-item">
+                    <div class="job-info">
+                        <div class="job-title">${job.subject}</div>
+                        <div class="job-details">
+                            ${job.email_count} recipients • ${job.schedule_time}
+                        </div>
+                    </div>
+                    <div>
+                        <span class="job-status status-${job.status}">${job.status}</span>
+                        ${job.status === 'scheduled' ? 
+                            `<button class="cancel-btn" onclick="cancelJob('${job.id}')">Cancel</button>` : 
+                            ''
+                        }
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Cancel job
+        async function cancelJob(jobId) {
+            if (!confirm('Are you sure you want to cancel this job?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/cancel_job/${jobId}`, {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('Job cancelled successfully', 'success');
+                    loadScheduledJobs();
+                } else {
+                    showAlert(result.error || 'Failed to cancel job', 'error');
+                }
+            } catch (error) {
+                showAlert('Error cancelling job: ' + error.message, 'error');
+            }
+        }
+
+        // Auto-refresh jobs every 30 seconds
+        setInterval(loadScheduledJobs, 30000);
+    </script>
+</body>
+</html>
