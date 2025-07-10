@@ -1,0 +1,7 @@
+Flask
+pandas
+pytz
+APScheduler
+pymongo
+Werkzeug
+gunicorn
