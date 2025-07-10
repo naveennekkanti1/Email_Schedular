@@ -3,8 +3,6 @@ import pandas as pd
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from email.mime.base import MIMEBase
-from email import encoders
 import os
 from werkzeug.utils import secure_filename
 import re
@@ -18,7 +16,6 @@ import threading
 import logging
 from pytz import timezone
 import pytz
-import json
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -45,24 +42,18 @@ try:
     mongo_client.admin.command('ping')  # test connection
     mongo_db = mongo_client['email_scheduler']
     email_jobs_collection = mongo_db['email_jobs']
-    email_templates_collection = mongo_db['email_templates']
     logger.info("MongoDB connected successfully")
 except Exception as e:
     logger.error(f"MongoDB connection failed: {e}")
     mongo_client = None
     mongo_db = None
     email_jobs_collection = None
-    email_templates_collection = None
 
 # File upload config
 UPLOAD_FOLDER = 'uploads'
-ATTACHMENTS_FOLDER = 'attachments'
 ALLOWED_EXTENSIONS = {'csv', 'xlsx', 'xls'}
-ALLOWED_IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff', 'webp'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['ATTACHMENTS_FOLDER'] = ATTACHMENTS_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(ATTACHMENTS_FOLDER, exist_ok=True)
 
 # Scheduler config
 executors = {'default': ThreadPoolExecutor(20)}
@@ -71,95 +62,6 @@ scheduler = BackgroundScheduler(executors=executors, job_defaults=job_defaults)
 
 scheduled_jobs = {}
 job_lock = threading.Lock()
-
-# Email Templates
-DEFAULT_TEMPLATES = [
-    {
-        'name': 'Welcome Email',
-        'subject': 'Welcome to Our Service!',
-        'content': '''Dear {{name}},
-
-Welcome to our service! We're excited to have you on board.
-
-Here are your next steps:
-1. Complete your profile
-2. Explore our features
-3. Contact us if you need help
-
-Best regards,
-The Team'''
-    },
-    {
-        'name': 'Newsletter',
-        'subject': 'Monthly Newsletter - {{month}}',
-        'content': '''Hello {{name}},
-
-Here's what's new this month:
-
-🔥 New Features:
-- Feature 1
-- Feature 2
-- Feature 3
-
-📈 Company Updates:
-- Update 1
-- Update 2
-
-Thanks for being part of our community!
-
-Best regards,
-Newsletter Team'''
-    },
-    {
-        'name': 'Promotion',
-        'subject': 'Special Offer Just for You!',
-        'content': '''Hi {{name}},
-
-We have a special offer just for you!
-
-🎉 {{discount}}% OFF on all products
-🕒 Valid until {{expiry_date}}
-🎁 Use code: {{promo_code}}
-
-Don't miss out on this amazing deal!
-
-Shop now: {{website_url}}
-
-Best regards,
-Sales Team'''
-    },
-    {
-        'name': 'Event Invitation',
-        'subject': 'You\'re Invited: {{event_name}}',
-        'content': '''Dear {{name}},
-
-You're cordially invited to {{event_name}}!
-
-📅 Date: {{event_date}}
-🕒 Time: {{event_time}}
-📍 Location: {{event_location}}
-
-Please RSVP by {{rsvp_date}}.
-
-We look forward to seeing you there!
-
-Best regards,
-Event Team'''
-    }
-]
-
-# Initialize templates in database
-def init_templates():
-    if email_templates_collection is None:
-        return
-    
-    try:
-        # Check if templates exist
-        if email_templates_collection.count_documents({}) == 0:
-            email_templates_collection.insert_many(DEFAULT_TEMPLATES)
-            logger.info("Default templates initialized")
-    except Exception as e:
-        logger.error(f"Error initializing templates: {e}")
 
 # Load existing jobs
 def load_scheduled_jobs():
@@ -170,13 +72,13 @@ def load_scheduled_jobs():
         jobs = email_jobs_collection.find({'status': 'scheduled'})
         for job in jobs:
             try:
-                schedule_dt = job['schedule_datetime']
+                schedule_dt = job['schedule_time']
                 if isinstance(schedule_dt, str):
                     schedule_dt = datetime.fromisoformat(schedule_dt.replace('Z', '+00:00'))
                 if schedule_dt > datetime.now():
                     scheduler.add_job(
                         func=send_bulk_emails_task,
-                        args=[str(job['_id']), job['emails'], job['subject'], job['message'], job.get('attachments', [])],
+                        args=[str(job['_id']), job['emails'], job['subject'], job['message']],
                         trigger='date',
                         run_date=schedule_dt,
                         id=str(job['_id']),
@@ -187,8 +89,7 @@ def load_scheduled_jobs():
                             'emails': job['emails'],
                             'subject': job['subject'],
                             'message': job['message'],
-                            'attachments': job.get('attachments', []),
-                            'schedule_datetime': schedule_dt,
+                            'schedule_time': schedule_dt,
                             'status': 'scheduled'
                         }
                     logger.info(f"Loaded scheduled job: {job['_id']}")
@@ -204,9 +105,6 @@ def load_scheduled_jobs():
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-def allowed_image_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
 
 def validate_email(email):
     return re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email) is not None
@@ -247,15 +145,8 @@ def extract_emails_from_file(file_path):
         logger.error(f"Error reading file: {e}")
         return []
 
-def replace_template_variables(content, variables):
-    """Replace template variables in content with actual values"""
-    for key, value in variables.items():
-        placeholder = f"{{{{{key}}}}}"
-        content = content.replace(placeholder, str(value))
-    return content
-
 # Background email task
-def send_bulk_emails_task(job_id, emails, subject, message, attachments=None):
+def send_bulk_emails_task(job_id, emails, subject, message):
     logger.info(f"Starting email task for job {job_id}")
     try:
         with job_lock:
@@ -282,24 +173,7 @@ def send_bulk_emails_task(job_id, emails, subject, message, attachments=None):
                 msg['From'] = SMTP_CONFIG['email']
                 msg['To'] = email
                 msg['Subject'] = subject
-                
-                # Add text content
                 msg.attach(MIMEText(message, 'plain'))
-                
-                # Add attachments if any
-                if attachments:
-                    for attachment_path in attachments:
-                        if os.path.exists(attachment_path):
-                            with open(attachment_path, "rb") as attachment:
-                                part = MIMEBase('application', 'octet-stream')
-                                part.set_payload(attachment.read())
-                                encoders.encode_base64(part)
-                                part.add_header(
-                                    'Content-Disposition',
-                                    f'attachment; filename= {os.path.basename(attachment_path)}'
-                                )
-                                msg.attach(part)
-                
                 server.send_message(msg)
                 sent_count += 1
                 logger.info(f"Email sent to {email}")
@@ -326,15 +200,6 @@ def send_bulk_emails_task(job_id, emails, subject, message, attachments=None):
                 scheduled_jobs[job_id]['status'] = 'completed'
                 scheduled_jobs[job_id]['sent_count'] = sent_count
                 scheduled_jobs[job_id]['failed_count'] = len(failed_emails)
-
-        # Clean up attachment files
-        if attachments:
-            for attachment_path in attachments:
-                try:
-                    if os.path.exists(attachment_path):
-                        os.remove(attachment_path)
-                except Exception as e:
-                    logger.error(f"Error removing attachment {attachment_path}: {e}")
 
     except Exception as e:
         logger.error(f"Error in send_bulk_emails_task for job {job_id}: {e}")
@@ -374,100 +239,6 @@ def upload_file():
             return jsonify({'error': 'Error processing file'})
     return jsonify({'error': 'Invalid file format. Please upload CSV or XLSX files.'})
 
-@app.route('/upload_images', methods=['POST'])
-def upload_images():
-    if 'images' not in request.files:
-        return jsonify({'error': 'No images uploaded'})
-    
-    files = request.files.getlist('images')
-    uploaded_files = []
-    
-    for file in files:
-        if file and file.filename != '' and allowed_image_file(file.filename):
-            try:
-                filename = secure_filename(file.filename)
-                # Add timestamp to avoid conflicts
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_")
-                filename = timestamp + filename
-                filepath = os.path.join(app.config['ATTACHMENTS_FOLDER'], filename)
-                file.save(filepath)
-                uploaded_files.append({
-                    'filename': filename,
-                    'original_name': file.filename,
-                    'path': filepath
-                })
-            except Exception as e:
-                logger.error(f"Error saving image {file.filename}: {e}")
-                return jsonify({'error': f'Error saving image {file.filename}'})
-        else:
-            return jsonify({'error': f'Invalid file format for {file.filename}. Please upload image files only.'})
-    
-    return jsonify({'success': True, 'files': uploaded_files})
-
-@app.route('/get_templates')
-def get_templates():
-    if email_templates_collection is None:
-        return jsonify({'templates': DEFAULT_TEMPLATES})
-    
-    try:
-        templates = list(email_templates_collection.find({}, {'_id': 0}))
-        return jsonify({'templates': templates})
-    except Exception as e:
-        logger.error(f"Error getting templates: {e}")
-        return jsonify({'templates': DEFAULT_TEMPLATES})
-
-@app.route('/save_template', methods=['POST'])
-def save_template():
-    if email_templates_collection is None:
-        return jsonify({'error': 'Database not available'})
-    
-    try:
-        data = request.json
-        template = {
-            'name': data.get('name', '').strip(),
-            'subject': data.get('subject', '').strip(),
-            'content': data.get('content', '').strip()
-        }
-        
-        if not template['name'] or not template['subject'] or not template['content']:
-            return jsonify({'error': 'All fields are required'})
-        
-        # Check if template already exists
-        existing = email_templates_collection.find_one({'name': template['name']})
-        if existing:
-            email_templates_collection.update_one(
-                {'name': template['name']},
-                {'$set': template}
-            )
-        else:
-            email_templates_collection.insert_one(template)
-        
-        return jsonify({'success': True})
-    except Exception as e:
-        logger.error(f"Error saving template: {e}")
-        return jsonify({'error': 'Error saving template'})
-
-@app.route('/delete_template', methods=['POST'])
-def delete_template():
-    if email_templates_collection is None:
-        return jsonify({'error': 'Database not available'})
-    
-    try:
-        data = request.json
-        template_name = data.get('name', '').strip()
-        
-        if not template_name:
-            return jsonify({'error': 'Template name is required'})
-        
-        result = email_templates_collection.delete_one({'name': template_name})
-        if result.deleted_count > 0:
-            return jsonify({'success': True})
-        else:
-            return jsonify({'error': 'Template not found'})
-    except Exception as e:
-        logger.error(f"Error deleting template: {e}")
-        return jsonify({'error': 'Error deleting template'})
-
 @app.route('/send_emails', methods=['POST'])
 def send_emails():
     try:
@@ -479,26 +250,9 @@ def send_emails():
         if not valid_emails:
             return jsonify({'error': 'No valid emails provided'})
 
-        subject = data.get('subject', '').strip()
-        message = data.get('message', '').strip()
-        schedule_datetime = data.get('schedule_datetime', '').strip()
-        attachments = data.get('attachments', [])
-        template_variables = data.get('template_variables', {})
-
+        subject, message, schedule_time = data.get('subject', '').strip(), data.get('message', '').strip(), data.get('schedule_time', '').strip()
         if not subject or not message:
             return jsonify({'error': 'Subject and message are required'})
-
-        # Replace template variables if provided
-        if template_variables:
-            subject = replace_template_variables(subject, template_variables)
-            message = replace_template_variables(message, template_variables)
-
-        # Process attachments
-        attachment_paths = []
-        for attachment in attachments:
-            attachment_path = os.path.join(app.config['ATTACHMENTS_FOLDER'], attachment['filename'])
-            if os.path.exists(attachment_path):
-                attachment_paths.append(attachment_path)
 
         job_id = str(ObjectId())
         job_data = {
@@ -506,59 +260,43 @@ def send_emails():
             'emails': valid_emails,
             'subject': subject,
             'message': message,
-            'attachments': attachment_paths,
-            'schedule_datetime':schedule_datetime,
-            'status': 'scheduled' if schedule_datetime else 'pending',
+            'schedule_time': schedule_time if schedule_time else None,
+            'status': 'scheduled' if schedule_time else 'pending',
             'created_at': datetime.utcnow(),
             'email_count': len(valid_emails)
         }
 
-        # Handle scheduling
-        if schedule_datetime:
-            try:
-                schedule_dt = datetime.fromisoformat(schedule_datetime.replace('Z', '+00:00'))
-                job_data['schedule_datetime'] = schedule_dt
-
-                if schedule_dt > datetime.utcnow():
-                    scheduler.add_job(
-                        func=send_bulk_emails_task,
-                        args=[job_id, valid_emails, subject, message, attachment_paths],
-                        trigger='date',
-                        run_date=schedule_dt,
-                        id=job_id,
-                        replace_existing=True
-                    )
-                    with job_lock:
-                        scheduled_jobs[job_id] = {
-                            'emails': valid_emails,
-                            'subject': subject,
-                            'message': message,
-                            'attachments': attachment_paths,
-                            'schedule_datetime': schedule_dt,
-                            'status': 'scheduled'
-                        }
-                else:
-                    return jsonify({'error': 'Schedule time must be in the future'})
-            except Exception as e:
-                logger.error(f"Invalid schedule_datetime: {e}")
-                return jsonify({'error': 'Invalid schedule_datetime format. Use ISO format.'})
-        else:
-            # Run immediately
-            scheduler.add_job(
-                func=send_bulk_emails_task,
-                args=[job_id, valid_emails, subject, message, attachment_paths],
-                trigger='date',
-                run_date=datetime.utcnow(),
-                id=job_id
-            )
-
         if email_jobs_collection is not None:
             email_jobs_collection.insert_one(job_data)
 
-        return jsonify({'success': True, 'job_id': job_id})
-
+        if schedule_time:
+            schedule_dt = datetime.fromisoformat(schedule_time.replace('Z', '+00:00'))
+            if schedule_dt <= datetime.now():
+                return jsonify({'error': 'Schedule time must be in the future'})
+            scheduler.add_job(
+                func=send_bulk_emails_task,
+                args=[job_id, valid_emails, subject, message],
+                trigger='date',
+                run_date=schedule_dt,
+                id=job_id,
+                replace_existing=True
+            )
+            with job_lock:
+                scheduled_jobs[job_id] = {
+                    'emails': valid_emails,
+                    'subject': subject,
+                    'message': message,
+                    'schedule_time': schedule_dt,
+                    'status': 'scheduled'
+                }
+            return jsonify({'success': True, 'job_id': job_id, 'scheduled': True, 'schedule_time': schedule_dt.isoformat()})
+        else:
+            if email_jobs_collection is not None:
+                email_jobs_collection.update_one({'_id': ObjectId(job_id)}, {'$set': {'status': 'sending'}})
+            threading.Thread(target=send_bulk_emails_task, args=(job_id, valid_emails, subject, message), daemon=True).start()
+            return jsonify({'success': True, 'job_id': job_id, 'scheduled': False})
     except Exception as e:
-        logger.error(f"Error in send_emails route: {e}")
+        logger.error(f"Error in send_emails: {e}")
         return jsonify({'error': 'Internal server error'})
 
 @app.route('/job_status/<job_id>')
@@ -578,23 +316,6 @@ def job_status(job_id):
         logger.error(f"Error getting job status: {e}")
         return jsonify({'error': 'Error retrieving job status'})
 
-@app.route('/get_scheduled_jobs')
-def get_scheduled_jobs():
-    if email_jobs_collection is None:
-        return jsonify([])
-    
-    try:
-        jobs = list(email_jobs_collection.find({"status": {"$in": ["scheduled", "completed"]}}))
-        
-        for job in jobs:
-            job['id'] = str(job['_id'])
-            job.pop('_id', None)
-        
-        return jsonify(jobs)
-    except Exception as e:
-        logger.error(f"Error getting scheduled jobs: {e}")
-        return jsonify([])
-
 @app.route('/scheduled_jobs')
 def scheduled_jobs_list():
     try:
@@ -605,7 +326,7 @@ def scheduled_jobs_list():
                     'id': job_id,
                     'subject': info['subject'],
                     'email_count': len(info['emails']),
-                    'schedule_datetime': info['schedule_datetime'].strftime('%Y-%m-%d %H:%M:%S'),
+                    'schedule_time': info['schedule_time'].strftime('%Y-%m-%d %H:%M:%S'),
                     'status': info['status']
                 })
         if email_jobs_collection is not None:
@@ -614,7 +335,7 @@ def scheduled_jobs_list():
                     'id': str(job['_id']),
                     'subject': job['subject'],
                     'email_count': job['email_count'],
-                    'schedule_datetime': job.get('schedule_datetime', job['created_at']).strftime('%Y-%m-%d %H:%M:%S'),
+                    'schedule_time': job.get('schedule_time', job['created_at']).strftime('%Y-%m-%d %H:%M:%S'),
                     'status': job['status']
                 }
                 if not any(j['id'] == job_info['id'] for j in jobs):
@@ -655,7 +376,6 @@ def health_check():
 
 if __name__ == '__main__':
     try:
-        init_templates()
         load_scheduled_jobs()
         if not scheduler.running:
             scheduler.start()
