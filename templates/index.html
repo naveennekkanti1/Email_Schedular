@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Bulk Email Sender</title>
+    <title>Bulk Email Sender</title>
     <style>
         * {
             margin: 0;
@@ -19,7 +19,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
@@ -188,7 +188,7 @@
         }
         
         .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             border: none;
             padding: 15px 30px;
@@ -197,8 +197,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            width: 100%;
         }
         
         .btn:hover {
@@ -206,124 +205,109 @@
             box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
         }
         
-        .btn:active {
-            transform: translateY(0);
-        }
-        
-        .btn-secondary {
-            background: #6c757d;
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
         
         .btn-success {
-            background: #28a745;
+            background: linear-gradient(135deg, #28a745, #20c997);
         }
         
-        .btn-danger {
-            background: #dc3545;
+        .btn-success:hover {
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
         }
         
-        .email-count {
-            background: #e9ecef;
-            padding: 10px 15px;
+        .email-list {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .email-item {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            margin: 3px;
+            border-radius: 15px;
+            font-size: 14px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .alert {
+            padding: 15px;
             border-radius: 8px;
             margin-bottom: 20px;
             font-weight: 500;
         }
         
-        .email-list {
-            max-height: 200px;
-            overflow-y: auto;
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
         
-        .email-item {
-            padding: 5px 0;
-            border-bottom: 1px solid #dee2e6;
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
         }
         
-        .email-item:last-child {
-            border-bottom: none;
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
         }
         
-        .progress-bar {
-            width: 100%;
-            height: 20px;
-            background: #e9ecef;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            transition: width 0.3s ease;
-        }
-        
-        .status-panel {
-            background: #f8f9fa;
+        .loading {
+            display: none;
+            text-align: center;
             padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border-left: 4px solid #667eea;
         }
         
-        .status-panel h3 {
-            margin-bottom: 10px;
-            color: #333;
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
         }
         
-        .status-item {
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .row {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
+            gap: 20px;
         }
         
-        .template-selector {
-            margin-bottom: 20px;
-        }
-        
-        .template-preview {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 10px;
-            border-left: 4px solid #667eea;
-        }
-        
-        .template-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .template-form {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-            margin-top: 20px;
-        }
-        
-        .variable-input {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .variable-input input {
+        .col {
             flex: 1;
         }
         
+        .scheduled-jobs {
+            margin-top: 20px;
+        }
+        
         .job-item {
-            background: white;
-            padding: 15px;
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
             border-radius: 8px;
+            padding: 15px;
             margin-bottom: 10px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -333,111 +317,68 @@
             flex: 1;
         }
         
-        .job-actions {
-            display: flex;
-            gap: 10px;
+        .job-title {
+            font-weight: 600;
+            color: #333;
         }
         
-        .status-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
+        .job-details {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .job-status {
+            padding: 5px 10px;
+            border-radius: 15px;
             font-size: 12px;
             font-weight: 500;
             text-transform: uppercase;
+            margin-right: 10px;
         }
         
         .status-scheduled {
-            background: #ffc107;
-            color: #212529;
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-sending {
+            background: #d1ecf1;
+            color: #0c5460;
         }
         
         .status-completed {
-            background: #28a745;
-            color: white;
+            background: #d4edda;
+            color: #155724;
         }
         
         .status-failed {
-            background: #dc3545;
-            color: white;
+            background: #f8d7da;
+            color: #721c24;
         }
         
         .status-cancelled {
-            background: #6c757d;
-            color: white;
+            background: #e2e3e5;
+            color: #383d41;
         }
         
-        .hidden {
-            display: none;
-        }
-        
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            z-index: 1000;
-            animation: slideIn 0.3s ease;
-        }
-        
-        .notification.success {
-            background: #28a745;
-        }
-        
-        .notification.error {
-            background: #dc3545;
-        }
-        
-        .notification.info {
-            background: #17a2b8;
-        }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        
-        .attachment-item {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .attachment-remove {
+        .cancel-btn {
             background: #dc3545;
             color: white;
             border: none;
             padding: 5px 10px;
-            border-radius: 3px;
+            border-radius: 5px;
             cursor: pointer;
             font-size: 12px;
         }
         
+        .cancel-btn:hover {
+            background: #c82333;
+        }
+        
         @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-            
-            .grid {
-                grid-template-columns: 1fr;
+            .row {
+                flex-direction: column;
             }
             
             .email-method,
@@ -445,8 +386,10 @@
                 flex-direction: column;
             }
             
-            .template-actions {
+            .job-item {
                 flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
             }
         }
     </style>
@@ -454,853 +397,409 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📧 Advanced Bulk Email Sender</h1>
-            <p>Send personalized emails to multiple recipients with scheduling and template support</p>
+            <h1>📧 Bulk Email Sender</h1>
+            <p>Send emails to multiple recipients instantly or schedule for later</p>
         </div>
+
+        <!-- Alert Messages -->
+        <div id="alertContainer"></div>
 
         <!-- Email Input Section -->
         <div class="form-section">
-            <h2>📋 Email Recipients</h2>
+            <h2>📮 Email Recipients</h2>
             <div class="email-method">
-                <button class="method-btn active" onclick="switchMethod('file')">📁 Upload File</button>
-                <button class="method-btn" onclick="switchMethod('manual')">✍️ Manual Entry</button>
+                <button type="button" class="method-btn active" id="manualBtn">Manual Entry</button>
+                <button type="button" class="method-btn" id="fileBtn">Upload File</button>
             </div>
-            
-            <div id="file-method">
+
+            <!-- Manual Email Input -->
+            <div id="manualInput">
+                <div class="input-group">
+                    <label for="emailList">Enter email addresses (comma separated):</label>
+                    <textarea id="emailList" placeholder="user1@example.com, user2@example.com, user3@example.com" rows="4"></textarea>
+                </div>
+            </div>
+
+            <!-- File Upload -->
+            <div id="fileInput" class="hidden">
                 <div class="file-upload">
-                    <input type="file" id="email-file" accept=".csv,.xlsx,.xls">
-                    <label for="email-file" class="file-upload-label">
-                        <span>📤 Click to upload CSV/Excel file</span>
+                    <input type="file" id="csvFile" accept=".csv,.xlsx,.xls">
+                    <label for="csvFile" class="file-upload-label">
+                        <span>📁 Choose CSV or Excel file</span>
                     </label>
                 </div>
-                <small style="color: #666;">Supported formats: CSV, XLSX, XLS</small>
+                <small>Supported formats: CSV, XLSX, XLS</small>
             </div>
-            
-            <div id="manual-method" class="hidden">
-                <div class="input-group">
-                    <label for="manual-emails">Enter email addresses (comma-separated):</label>
-                    <textarea id="manual-emails" placeholder="email1@example.com, email2@example.com, email3@example.com" rows="4"></textarea>
-                </div>
-            </div>
-            
-            <div id="email-count" class="email-count hidden">
-                <span id="count-text">0 emails loaded</span>
-            </div>
-            
-            <div id="email-list" class="email-list hidden"></div>
-        </div>
 
-        <!-- Template Section -->
-        <div class="form-section">
-            <h2>📝 Email Templates</h2>
-            <div class="template-selector">
-                <div class="input-group">
-                    <label for="template-select">Select Template:</label>
-                    <select id="template-select">
-                        <option value="">-- Select a template --</option>
-                    </select>
-                </div>
-                <div class="template-actions">
-                    <button class="btn btn-secondary" onclick="showNewTemplateForm()">+ New Template</button>
-                    <button class="btn btn-secondary" onclick="editTemplate()">Edit Template</button>
-                    <button class="btn btn-danger" onclick="deleteTemplate()">Delete Template</button>
-                </div>
-            </div>
-            
-            <div id="template-preview" class="template-preview hidden">
-                <h4>Template Preview:</h4>
-                <div id="preview-content"></div>
-            </div>
-            
-            <div id="template-form" class="template-form hidden">
-                <h3>Template Editor</h3>
-                <div class="input-group">
-                    <label for="template-name">Template Name:</label>
-                    <input type="text" id="template-name" placeholder="Enter template name">
-                </div>
-                <div class="input-group">
-                    <label for="template-subject">Subject:</label>
-                    <input type="text" id="template-subject" placeholder="Enter email subject">
-                </div>
-                <div class="input-group">
-                    <label for="template-content">Content:</label>
-                    <textarea id="template-content" rows="8" placeholder="Enter email content. Use {{variable}} for dynamic content."></textarea>
-                </div>
-                <div class="template-actions">
-                    <button class="btn btn-success" onclick="saveTemplate()">Save Template</button>
-                    <button class="btn btn-secondary" onclick="cancelTemplate()">Cancel</button>
-                </div>
+            <!-- Email List Display -->
+            <div id="emailListContainer" class="hidden">
+                <h3>📋 Recipients List (<span id="emailCount">0</span> emails)</h3>
+                <div id="emailList" class="email-list"></div>
             </div>
         </div>
 
-        <!-- Template Variables Section -->
+        <!-- Email Content Section -->
         <div class="form-section">
-            <h2>🔧 Template Variables</h2>
-            <p style="margin-bottom: 15px; color: #666;">Add dynamic variables to personalize your emails (e.g., {{name}}, {{company}}, {{date}})</p>
-            <div id="variables-container">
-                <div class="variable-input">
-                    <input type="text" placeholder="Variable name (e.g., name)" class="variable-name">
-                    <input type="text" placeholder="Default value" class="variable-value">
-                    <button class="btn btn-secondary" onclick="addVariable()">+ Add</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Email Composition Section -->
-        <div class="form-section">
-            <h2>✉️ Email Composition</h2>
+            <h2>✉️ Email Content</h2>
             <div class="input-group">
-                <label for="email-subject">Subject:</label>
-                <input type="text" id="email-subject" placeholder="Enter email subject">
+                <label for="subject">Subject:</label>
+                <input type="text" id="subject" placeholder="Enter email subject">
             </div>
             <div class="input-group">
-                <label for="email-message">Message:</label>
-                <textarea id="email-message" rows="8" placeholder="Enter your email message..."></textarea>
+                <label for="message">Message:</label>
+                <textarea id="message" placeholder="Enter your email message..." rows="8"></textarea>
             </div>
         </div>
 
-        <!-- Attachments Section -->
+        <!-- Schedule Section -->
         <div class="form-section">
-            <h2>📎 Attachments</h2>
-            <div class="file-upload">
-                <input type="file" id="attachment-files" multiple accept="image/*">
-                <label for="attachment-files" class="file-upload-label">
-                    <span>📷 Click to upload images</span>
-                </label>
-            </div>
-            <div id="attachments-list"></div>
-        </div>
-
-        <!-- Scheduling Section -->
-        <div class="form-section">
-            <h2>⏰ Scheduling</h2>
+            <h2>⏰ Schedule</h2>
             <div class="schedule-options">
-                <button class="schedule-btn active" onclick="switchSchedule('now')">📤 Send Now</button>
-                <button class="schedule-btn" onclick="switchSchedule('later')">⏰ Schedule Later</button>
+                <button type="button" class="schedule-btn active" id="sendNowBtn">Send Now</button>
+                <button type="button" class="schedule-btn" id="scheduleLaterBtn">Schedule Later</button>
             </div>
-            
-            <div id="schedule-later" class="hidden">
+
+            <div id="scheduleInput" class="hidden">
                 <div class="input-group">
-                    <label for="schedule-datetime">Schedule Date & Time:</label>
-                    <input type="datetime-local" id="schedule-datetime">
+                    <label for="scheduleTime">Schedule Date & Time:</label>
+                    <input type="datetime-local" id="scheduleTime">
                 </div>
             </div>
         </div>
 
         <!-- Send Button -->
-        <div class="form-section">
-            <button class="btn" onclick="sendEmails()" style="width: 100%; font-size: 18px;">
-                🚀 Send Emails
-            </button>
-        </div>
+        <button type="button" class="btn" id="sendBtn">
+            <span id="sendBtnText">📤 Send Emails</span>
+        </button>
 
-        <!-- Status Panel -->
-        <div id="status-panel" class="status-panel hidden">
-            <h3>📊 Email Status</h3>
-            <div class="progress-bar">
-                <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
-            </div>
-            <div class="status-item">
-                <span>Job ID:</span>
-                <span id="job-id">-</span>
-            </div>
-            <div class="status-item">
-                <span>Status:</span>
-                <span id="job-status">-</span>
-            </div>
-            <div class="status-item">
-                <span>Emails Sent:</span>
-                <span id="emails-sent">0</span>
-            </div>
-            <div class="status-item">
-                <span>Total Emails:</span>
-                <span id="total-emails">0</span>
-            </div>
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Processing your request...</p>
         </div>
 
         <!-- Scheduled Jobs Section -->
         <div class="form-section">
             <h2>📅 Scheduled Jobs</h2>
-            <div id="scheduled-jobs-list">
-                <p>No scheduled jobs found.</p>
+            <button type="button" class="btn btn-success" id="refreshJobsBtn">🔄 Refresh Jobs</button>
+            <div id="scheduledJobs" class="scheduled-jobs">
+                <!-- Jobs will be loaded here -->
             </div>
-            <button class="btn btn-secondary" onclick="refreshJobs()">🔄 Refresh Jobs</button>
         </div>
     </div>
 
     <script>
+        // Global variables
         let currentEmails = [];
-        let currentAttachments = [];
-        let templates = [];
-        let templateVariables = {};
+        let emailMethod = 'manual';
+        let scheduleMode = 'now';
+
+        // DOM elements
+        const manualBtn = document.getElementById('manualBtn');
+        const fileBtn = document.getElementById('fileBtn');
+        const manualInput = document.getElementById('manualInput');
+        const fileInput = document.getElementById('fileInput');
+        const csvFile = document.getElementById('csvFile');
+        const emailListContainer = document.getElementById('emailListContainer');
+        const emailList = document.getElementById('emailList');
+        const emailCount = document.getElementById('emailCount');
+        const sendNowBtn = document.getElementById('sendNowBtn');
+        const scheduleLaterBtn = document.getElementById('scheduleLaterBtn');
+        const scheduleInput = document.getElementById('scheduleInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const sendBtnText = document.getElementById('sendBtnText');
+        const loading = document.getElementById('loading');
+        const alertContainer = document.getElementById('alertContainer');
+        const refreshJobsBtn = document.getElementById('refreshJobsBtn');
+        const scheduledJobs = document.getElementById('scheduledJobs');
+
+        // Event listeners
+        manualBtn.addEventListener('click', () => switchEmailMethod('manual'));
+        fileBtn.addEventListener('click', () => switchEmailMethod('file'));
+        sendNowBtn.addEventListener('click', () => switchScheduleMode('now'));
+        scheduleLaterBtn.addEventListener('click', () => switchScheduleMode('later'));
+        csvFile.addEventListener('change', handleFileUpload);
+        sendBtn.addEventListener('click', handleSendEmails);
+        refreshJobsBtn.addEventListener('click', loadScheduledJobs);
+        document.getElementById('emailList').addEventListener('input', updateEmailsFromManual);
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            loadTemplates();
-            refreshJobs();
-            setupEventListeners();
+            loadScheduledJobs();
+            setMinDateTime();
         });
 
-        function setupEventListeners() {
-            // File upload listeners
-            document.getElementById('email-file').addEventListener('change', handleFileUpload);
-            document.getElementById('attachment-files').addEventListener('change', handleAttachmentUpload);
-            
-            // Template selector
-            document.getElementById('template-select').addEventListener('change', handleTemplateSelect);
-            
-            // Manual email input
-            document.getElementById('manual-emails').addEventListener('input', handleManualEmailInput);
+        // Utility functions
+        function showAlert(message, type = 'info') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertContainer.appendChild(alertDiv);
+
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
         }
 
-        function switchMethod(method) {
-            const fileMethod = document.getElementById('file-method');
-            const manualMethod = document.getElementById('manual-method');
-            const methodBtns = document.querySelectorAll('.method-btn');
+        function showLoading(show = true) {
+            loading.style.display = show ? 'block' : 'none';
+            sendBtn.disabled = show;
+        }
+
+        function setMinDateTime() {
+            const now = new Date();
+            const minDateTime = new Date(now.getTime() + 5 * 60000); // 5 minutes from now
+            document.getElementById('scheduleTime').min = minDateTime.toISOString().slice(0, 16);
+        }
+
+        // Email method switching
+        function switchEmailMethod(method) {
+            emailMethod = method;
             
-            methodBtns.forEach(btn => btn.classList.remove('active'));
-            
-            if (method === 'file') {
-                fileMethod.classList.remove('hidden');
-                manualMethod.classList.add('hidden');
-                methodBtns[0].classList.add('active');
+            if (method === 'manual') {
+                manualBtn.classList.add('active');
+                fileBtn.classList.remove('active');
+                manualInput.classList.remove('hidden');
+                fileInput.classList.add('hidden');
             } else {
-                fileMethod.classList.add('hidden');
-                manualMethod.classList.remove('hidden');
-                methodBtns[1].classList.add('active');
+                fileBtn.classList.add('active');
+                manualBtn.classList.remove('active');
+                fileInput.classList.remove('hidden');
+                manualInput.classList.add('hidden');
             }
         }
 
-        function switchSchedule(type) {
-            const scheduleLater = document.getElementById('schedule-later');
-            const scheduleBtns = document.querySelectorAll('.schedule-btn');
+        // Schedule mode switching
+        function switchScheduleMode(mode) {
+            scheduleMode = mode;
             
-            scheduleBtns.forEach(btn => btn.classList.remove('active'));
-            
-            if (type === 'now') {
-                scheduleLater.classList.add('hidden');
-                scheduleBtns[0].classList.add('active');
+            if (mode === 'now') {
+                sendNowBtn.classList.add('active');
+                scheduleLaterBtn.classList.remove('active');
+                scheduleInput.classList.add('hidden');
+                sendBtnText.textContent = '📤 Send Emails';
             } else {
-                scheduleLater.classList.remove('hidden');
-                scheduleBtns[1].classList.add('active');
+                scheduleLaterBtn.classList.add('active');
+                sendNowBtn.classList.remove('active');
+                scheduleInput.classList.remove('hidden');
+                sendBtnText.textContent = '⏰ Schedule Emails';
             }
         }
 
-        function handleFileUpload(event) {
+        // Update emails from manual input
+        function updateEmailsFromManual() {
+            const emailText = document.getElementById('emailList').value;
+            if (emailText.trim()) {
+                currentEmails = emailText.split(',').map(email => email.trim()).filter(email => email);
+                displayEmails();
+            } else {
+                currentEmails = [];
+                emailListContainer.classList.add('hidden');
+            }
+        }
+
+        // Handle file upload
+        async function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
-            
+
             const formData = new FormData();
             formData.append('file', file);
-            
-            fetch('/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    currentEmails = data.emails;
+
+            showLoading(true);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    currentEmails = result.emails;
                     displayEmails();
-                    showNotification('File uploaded successfully!', 'success');
+                    showAlert(`Successfully loaded ${currentEmails.length} emails from file`, 'success');
                 } else {
-                    showNotification(data.error, 'error');
+                    showAlert(result.error || 'Failed to process file', 'error');
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Error uploading file', 'error');
-            });
-        }
-
-        function handleManualEmailInput() {
-            const emailText = document.getElementById('manual-emails').value;
-            const emails = emailText.split(',').map(email => email.trim()).filter(email => email);
-            const validEmails = emails.filter(email => validateEmail(email));
-            
-            currentEmails = validEmails;
-            displayEmails();
-        }
-
-        function handleAttachmentUpload(event) {
-            const files = event.target.files;
-            if (!files.length) return;
-            
-            const formData = new FormData();
-            for (let file of files) {
-                formData.append('images', file);
+            } catch (error) {
+                showAlert('Error uploading file: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
             }
-            
-            fetch('/upload_images', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    currentAttachments = currentAttachments.concat(data.files);
-                    displayAttachments();
-                    showNotification('Images uploaded successfully!', 'success');
-                } else {
-                    showNotification(data.error, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Error uploading images', 'error');
-            });
         }
 
+        // Display emails
         function displayEmails() {
-            const countElement = document.getElementById('email-count');
-            const listElement = document.getElementById('email-list');
-            const countText = document.getElementById('count-text');
-            
-            if (currentEmails.length > 0) {
-                countText.textContent = `${currentEmails.length} emails loaded`;
-                countElement.classList.remove('hidden');
-                
-                listElement.innerHTML = currentEmails.map(email => 
-                    `<div class="email-item">${email}</div>`
-                ).join('');
-                listElement.classList.remove('hidden');
-            } else {
-                countElement.classList.add('hidden');
-                listElement.classList.add('hidden');
-            }
-        }
-
-        function displayAttachments() {
-            const listElement = document.getElementById('attachments-list');
-            
-            if (currentAttachments.length > 0) {
-                listElement.innerHTML = currentAttachments.map((attachment, index) => 
-                    `<div class="attachment-item">
-                        <span>${attachment.original_name}</span>
-                        <button class="attachment-remove" onclick="removeAttachment(${index})">Remove</button>
-                    </div>`
-                ).join('');
-            } else {
-                listElement.innerHTML = '';
-            }
-        }
-
-        function removeAttachment(index) {
-            currentAttachments.splice(index, 1);
-            displayAttachments();
-        }
-
-        function validateEmail(email) {
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(email);
-        }
-
-        function loadTemplates() {
-            fetch('/get_templates')
-                .then(response => response.json())
-                .then(data => {
-                    templates = data.templates;
-                    const select = document.getElementById('template-select');
-                    select.innerHTML = '<option value="">-- Select a template --</option>';
-                    
-                    templates.forEach(template => {
-                        const option = document.createElement('option');
-                        option.value = template.name;
-                        option.textContent = template.name;
-                        select.appendChild(option);
-                    });
-                })
-                .catch(error => {
-                    console.error('Error loading templates:', error);
-                });
-        }
-
-        function handleTemplateSelect() {
-            const selectedName = document.getElementById('template-select').value;
-            const template = templates.find(t => t.name === selectedName);
-            
-            if (template) {
-                document.getElementById('email-subject').value = template.subject;
-                document.getElementById('email-message').value = template.content;
-                
-                // Show preview
-                const preview = document.getElementById('template-preview');
-                const previewContent = document.getElementById('preview-content');
-                previewContent.innerHTML = `
-                    <strong>Subject:</strong> ${template.subject}<br>
-                    <strong>Content:</strong><br>
-                    <pre style="white-space: pre-wrap; font-family: inherit;">${template.content}</pre>
-                `;
-                preview.classList.remove('hidden');
-            } else {
-                document.getElementById('template-preview').classList.add('hidden');
-            }
-        }
-
-        function showNewTemplateForm() {
-            document.getElementById('template-form').classList.remove('hidden');
-            document.getElementById('template-name').value = '';
-            document.getElementById('template-subject').value = '';
-            document.getElementById('template-content').value = '';
-        }
-
-        function editTemplate() {
-            const selectedName = document.getElementById('template-select').value;
-            if (!selectedName) {
-                showNotification('Please select a template to edit', 'error');
-                return;
-            }
-            
-            const template = templates.find(t => t.name === selectedName);
-            if (template) {
-                document.getElementById('template-form').classList.remove('hidden');
-                document.getElementById('template-name').value = template.name;
-                document.getElementById('template-subject').value = template.subject;
-                document.getElementById('template-content').value = template.content;
-            }
-        }
-
-        function saveTemplate() {
-            const name = document.getElementById('template-name').value.trim();
-            const subject = document.getElementById('template-subject').value.trim();
-            const content = document.getElementById('template-content').value.trim();
-            
-            if (!name || !subject || !content) {
-                showNotification('All fields are required', 'error');
-                return;
-            }
-            
-            fetch('/save_template', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    name: name,
-                    subject: subject,
-                    content: content
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('Template saved successfully!', 'success');
-                    loadTemplates();
-                    cancelTemplate();
-                } else {
-                    showNotification(data.error, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Error saving template', 'error');
-            });
-        }
-
-        function deleteTemplate() {
-            const selectedName = document.getElementById('template-select').value;
-            if (!selectedName) {
-                showNotification('Please select a template to delete', 'error');
-                return;
-            }
-            
-            if (!confirm('Are you sure you want to delete this template?')) {
-                return;
-            }
-            
-            fetch('/delete_template', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    name: selectedName
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('Template deleted successfully!', 'success');
-                    loadTemplates();
-                    document.getElementById('template-preview').classList.add('hidden');
-                } else {
-                    showNotification(data.error, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Error deleting template', 'error');
-            });
-        }
-
-        function cancelTemplate() {
-            document.getElementById('template-form').classList.add('hidden');
-        }
-
-        function addVariable() {
-            const container = document.getElementById('variables-container');
-            const newVariable = document.createElement('div');
-            newVariable.className = 'variable-input';
-            newVariable.innerHTML = `
-                <input type="text" placeholder="Variable name" class="variable-name">
-                <input type="text" placeholder="Default value" class="variable-value">
-                <button class="btn btn-danger" onclick="removeVariable(this)">Remove</button>`;
-            container.appendChild(newVariable);
-        }
-
-        function removeVariable(button) {
-            button.parentElement.remove();
-        }
-
-        function sendEmails() {
             if (currentEmails.length === 0) {
-                showNotification('Please add email recipients first', 'error');
+                emailListContainer.classList.add('hidden');
                 return;
             }
+
+            emailCount.textContent = currentEmails.length;
+            emailList.innerHTML = currentEmails.map(email => 
+                `<span class="email-item">${email}</span>`
+            ).join('');
+            emailListContainer.classList.remove('hidden');
+        }
+
+        // Handle send emails
+        async function handleSendEmails() {
+            // Validate inputs
+            const subject = document.getElementById('subject').value.trim();
+            const message = document.getElementById('message').value.trim();
             
-            const subject = document.getElementById('email-subject').value.trim();
-            const message = document.getElementById('email-message').value.trim();
-            
-            if (!subject || !message) {
-                showNotification('Subject and message are required', 'error');
+            if (!subject) {
+                showAlert('Please enter a subject', 'error');
                 return;
             }
-            
-            const isScheduled = document.querySelector('.schedule-btn.active').textContent.includes('Schedule');
-            const scheduleDateTime = isScheduled ? document.getElementById('schedule-datetime').value : null;
-            
-            if (isScheduled && !scheduleDateTime) {
-                showNotification('Please select a date and time for scheduling', 'error');
+
+            if (!message) {
+                showAlert('Please enter a message', 'error');
                 return;
             }
-            
-            // Collect template variables
-            const variables = {};
-            const variableInputs = document.querySelectorAll('.variable-input');
-            variableInputs.forEach(input => {
-                const name = input.querySelector('.variable-name').value.trim();
-                const value = input.querySelector('.variable-value').value.trim();
-                if (name && value) {
-                    variables[name] = value;
+
+            // Get emails
+            let emails = [];
+            if (emailMethod === 'manual') {
+                const emailText = document.getElementById('emailList').value.trim();
+                if (emailText) {
+                    emails = emailText.split(',').map(email => email.trim()).filter(email => email);
                 }
-            });
-            
-            const emailData = {
-                emails: currentEmails,
+            } else {
+                emails = currentEmails;
+            }
+
+            if (emails.length === 0) {
+                showAlert('Please enter at least one email address', 'error');
+                return;
+            }
+
+            // Prepare request data
+            const requestData = {
+                emails: emails,
                 subject: subject,
-                message: message,
-                attachments: currentAttachments,
-                variables: variables,
-                scheduled: isScheduled,
-                schedule_datetime: scheduleDateTime
+                message: message
             };
-            
-            fetch('/send_emails', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(emailData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    if (isScheduled) {
-                        showNotification('Emails scheduled successfully!', 'success');
-                        refreshJobs();
-                    } else {
-                        showNotification('Email sending started!', 'success');
-                        showStatusPanel(data.job_id);
-                        startStatusUpdates(data.job_id);
-                    }
-                } else {
-                    showNotification(data.error, 'error');
+
+            // Add schedule time if scheduling
+            if (scheduleMode === 'later') {
+                const scheduleTime = document.getElementById('scheduleTime').value;
+                if (!scheduleTime) {
+                    showAlert('Please select a schedule time', 'error');
+                    return;
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Error sending emails', 'error');
-            });
-        }
+                requestData.schedule_time = scheduleTime;
+            }
 
-        function showStatusPanel(jobId) {
-            const statusPanel = document.getElementById('status-panel');
-            document.getElementById('job-id').textContent = jobId;
-            document.getElementById('job-status').textContent = 'In Progress';
-            document.getElementById('emails-sent').textContent = '0';
-            document.getElementById('total-emails').textContent = currentEmails.length;
-            statusPanel.classList.remove('hidden');
-        }
+            showLoading(true);
 
-        function startStatusUpdates(jobId) {
-            const interval = setInterval(() => {
-                fetch(`/job_status/${jobId}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            updateStatusPanel(data.status);
-                            if (data.status.status === 'completed' || data.status.status === 'failed') {
-                                clearInterval(interval);
-                            }
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error getting status:', error);
-                        clearInterval(interval);
-                    });
-            }, 2000);
-        }
+            try {
+                const response = await fetch('/send_emails', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
 
-        function updateStatusPanel(status) {
-            document.getElementById('job-status').textContent = status.status;
-            document.getElementById('emails-sent').textContent = status.emails_sent;
-            
-            const progress = (status.emails_sent / status.total_emails) * 100;
-            document.getElementById('progress-fill').style.width = `${progress}%`;
-            
-            if (status.status === 'completed') {
-                showNotification('All emails sent successfully!', 'success');
-            } else if (status.status === 'failed') {
-                showNotification('Email sending failed', 'error');
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.scheduled) {
+                        showAlert(`Emails scheduled successfully for ${new Date(result.schedule_time).toLocaleString()}`, 'success');
+                    } else {
+                        showAlert('Emails are being sent in the background', 'success');
+                    }
+                    
+                    // Clear form
+                    document.getElementById('subject').value = '';
+                    document.getElementById('message').value = '';
+                    document.getElementById('emailList').value = '';
+                    currentEmails = [];
+                    emailListContainer.classList.add('hidden');
+                    
+                    // Refresh jobs
+                    setTimeout(loadScheduledJobs, 1000);
+                } else {
+                    showAlert(result.error || 'Failed to send emails', 'error');
+                }
+            } catch (error) {
+                showAlert('Error sending emails: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
             }
         }
 
-        function refreshJobs() {
-            fetch('/get_jobs')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        displayJobs(data.jobs);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error getting jobs:', error);
-                });
+        // Load scheduled jobs
+        async function loadScheduledJobs() {
+            try {
+                const response = await fetch('/scheduled_jobs');
+                const jobs = await response.json();
+
+                if (Array.isArray(jobs)) {
+                    displayScheduledJobs(jobs);
+                } else {
+                    showAlert('Failed to load scheduled jobs', 'error');
+                }
+            } catch (error) {
+                showAlert('Error loading scheduled jobs: ' + error.message, 'error');
+            }
         }
 
-        function displayJobs(jobs) {
-            const container = document.getElementById('scheduled-jobs-list');
-            
+        // Display scheduled jobs
+        function displayScheduledJobs(jobs) {
             if (jobs.length === 0) {
-                container.innerHTML = '<p>No scheduled jobs found.</p>';
+                scheduledJobs.innerHTML = '<p>No scheduled jobs found.</p>';
                 return;
             }
-            
-            container.innerHTML = jobs.map(job => `
+
+            scheduledJobs.innerHTML = jobs.map(job => `
                 <div class="job-item">
                     <div class="job-info">
-                        <strong>Job ID:</strong> ${job.id}<br>
-                        <strong>Subject:</strong> ${job.subject}<br>
-                        <strong>Recipients:</strong> ${job.recipient_count}<br>
-                        <strong>Scheduled:</strong> ${job.scheduled_time || 'Immediate'}<br>
-                        <strong>Status:</strong> <span class="status-badge status-${job.status}">${job.status}</span>
+                        <div class="job-title">${job.subject}</div>
+                        <div class="job-details">
+                            ${job.email_count} recipients • ${job.schedule_time}
+                        </div>
                     </div>
-                    <div class="job-actions">
+                    <div>
+                        <span class="job-status status-${job.status}">${job.status}</span>
                         ${job.status === 'scheduled' ? 
-                            `<button class="btn btn-danger" onclick="cancelJob('${job.id}')">Cancel</button>` : 
-                            `<button class="btn btn-secondary" onclick="viewJobDetails('${job.id}')">Details</button>`
+                            `<button class="cancel-btn" onclick="cancelJob('${job.id}')">Cancel</button>` : 
+                            ''
                         }
                     </div>
                 </div>
             `).join('');
         }
 
-        function cancelJob(jobId) {
+        // Cancel job
+        async function cancelJob(jobId) {
             if (!confirm('Are you sure you want to cancel this job?')) {
                 return;
             }
-            
-            fetch(`/cancel_job/${jobId}`, {
-                method: 'POST'
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showNotification('Job cancelled successfully!', 'success');
-                    refreshJobs();
-                } else {
-                    showNotification(data.error, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showNotification('Error cancelling job', 'error');
-            });
-        }
 
-        function viewJobDetails(jobId) {
-            fetch(`/job_details/${jobId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(`Job Details:\n\nID: ${data.job.id}\nSubject: ${data.job.subject}\nMessage: ${data.job.message}\nRecipients: ${data.job.recipient_count}\nStatus: ${data.job.status}\nCreated: ${data.job.created_at}`);
-                    } else {
-                        showNotification(data.error, 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showNotification('Error getting job details', 'error');
+            try {
+                const response = await fetch(`/cancel_job/${jobId}`, {
+                    method: 'POST'
                 });
-        }
 
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 5000);
-        }
+                const result = await response.json();
 
-        // Utility functions
-        function exportEmailList() {
-            if (currentEmails.length === 0) {
-                showNotification('No emails to export', 'error');
-                return;
-            }
-            
-            const csvContent = "data:text/csv;charset=utf-8," + currentEmails.join('\n');
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "email_list.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function clearEmailList() {
-            if (confirm('Are you sure you want to clear the email list?')) {
-                currentEmails = [];
-                displayEmails();
-                document.getElementById('email-file').value = '';
-                document.getElementById('manual-emails').value = '';
-                showNotification('Email list cleared', 'info');
-            }
-        }
-
-        function previewEmail() {
-            const subject = document.getElementById('email-subject').value.trim();
-            const message = document.getElementById('email-message').value.trim();
-            
-            if (!subject || !message) {
-                showNotification('Subject and message are required for preview', 'error');
-                return;
-            }
-            
-            // Apply variables to content
-            let previewSubject = subject;
-            let previewMessage = message;
-            
-            const variableInputs = document.querySelectorAll('.variable-input');
-            variableInputs.forEach(input => {
-                const name = input.querySelector('.variable-name').value.trim();
-                const value = input.querySelector('.variable-value').value.trim();
-                if (name && value) {
-                    const regex = new RegExp(`{{'{{'}}${name}}}`, 'g');
-                    previewSubject = previewSubject.replace(regex, value);
-                    previewMessage = previewMessage.replace(regex, value);
+                if (result.success) {
+                    showAlert('Job cancelled successfully', 'success');
+                    loadScheduledJobs();
+                } else {
+                    showAlert(result.error || 'Failed to cancel job', 'error');
                 }
-            });
-            
-            const previewWindow = window.open('', '_blank', 'width=600,height=400');
-            previewWindow.document.write(`
-                <html>
-                    <head>
-                        <title>Email Preview</title>
-                        <style>
-                            body { font-family: Arial, sans-serif; padding: 20px; }
-                            .preview-header { background: #f8f9fa; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
-                            .preview-content { border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
-                        </style>
-                    </head>
-                    <body>
-                        <h2>Email Preview</h2>
-                        <div class="preview-header">
-                            <strong>Subject:</strong> ${previewSubject}
-                        </div>
-                        <div class="preview-content">
-                            <pre style="white-space: pre-wrap; font-family: inherit;">${previewMessage}</pre>
-                        </div>
-                    </body>
-                </html>
-            `);
-        }
-
-        // Auto-save functionality
-        function autoSave() {
-            const emailData = {
-                emails: currentEmails,
-                subject: document.getElementById('email-subject').value,
-                message: document.getElementById('email-message').value,
-                attachments: currentAttachments
-            };
-            
-            // Store in memory only (no localStorage in Claude.ai)
-            window.autoSaveData = emailData;
-        }
-
-        // Auto-save every 30 seconds
-        setInterval(autoSave, 30000);
-
-        // Load auto-saved data on page load
-        function loadAutoSaved() {
-            if (window.autoSaveData) {
-                const data = window.autoSaveData;
-                currentEmails = data.emails || [];
-                currentAttachments = data.attachments || [];
-                document.getElementById('email-subject').value = data.subject || '';
-                document.getElementById('email-message').value = data.message || '';
-                
-                displayEmails();
-                displayAttachments();
+            } catch (error) {
+                showAlert('Error cancelling job: ' + error.message, 'error');
             }
         }
 
-        // Add keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey || e.metaKey) {
-                switch(e.key) {
-                    case 's':
-                        e.preventDefault();
-                        autoSave();
-                        showNotification('Draft saved', 'info');
-                        break;
-                    case 'Enter':
-                        if (e.shiftKey) {
-                            e.preventDefault();
-                            sendEmails();
-                        }
-                        break;
-                }
-            }
-        });
-
-        // Initialize tooltips and help text
-        function initializeHelp() {
-            const helpTexts = {
-                'email-subject': 'Use {{variable}} syntax for dynamic content',
-                'email-message': 'Use {{variable}} syntax for personalization',
-                'schedule-datetime': 'Select future date and time for scheduling',
-                'template-content': 'Use {{variable}} for dynamic content like {{name}}, {{company}}, etc.'
-            };
-            
-            Object.keys(helpTexts).forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.title = helpTexts[id];
-                }
-            });
-        }
-
-        // Call initialization functions
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeHelp();
-            loadAutoSaved();
-        });
+        // Auto-refresh jobs every 30 seconds
+        setInterval(loadScheduledJobs, 30000);
     </script>
 </body>
 </html>
